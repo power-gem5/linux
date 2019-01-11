@@ -27,6 +27,18 @@ static LIST_HEAD(vas_instances);
 
 static DEFINE_PER_CPU(int, cpu_vas_id);
 
+int cpu_to_chip_id_local(int cpu)
+{
+	struct device_node *np;
+
+	np = of_get_cpu_node(cpu, NULL);
+	if (!np)
+		return -1;
+
+	of_node_put(np);
+	return of_get_ibm_chip_id(np);
+}
+
 static int init_vas_instance(struct platform_device *pdev)
 {
 	int rc, cpu, vasid;
@@ -78,7 +90,7 @@ static int init_vas_instance(struct platform_device *pdev)
 			vinst->paste_base_addr, vinst->paste_win_id_shift);
 
 	for_each_possible_cpu(cpu) {
-		if (cpu_to_chip_id(cpu) == of_get_ibm_chip_id(dn))
+		if (cpu_to_chip_id_local(cpu) == of_get_ibm_chip_id(dn))
 			per_cpu(cpu_vas_id, cpu) = vasid;
 	}
 
@@ -130,8 +142,13 @@ int chip_to_vas_id(int chipid)
 	int cpu;
 
 	for_each_possible_cpu(cpu) {
-		if (cpu_to_chip_id(cpu) == chipid)
+		if (cpu_to_chip_id_local(cpu) == chipid)
 			return per_cpu(cpu_vas_id, cpu);
+		/*
+		 * if (chipid == 0) can potentially replace this check
+		 * because for a uniprocessor system, it is always zero.
+		 * Even the for_each() isn't needed but doesn't hurt.
+		 */
 	}
 	return -1;
 }

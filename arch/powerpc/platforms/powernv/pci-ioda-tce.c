@@ -17,6 +17,10 @@
 #include <asm/tce.h>
 #include "pci.h"
 
+/* As per hvcall.h - Don't know this for sure */
+#define H_HARDWARE	-1
+#define H_TOO_HARD	9999
+
 void pnv_pci_setup_iommu_table(struct iommu_table *tbl,
 		void *tce_mem, u64 tce_size,
 		u64 dma_offset, unsigned int page_shift)
