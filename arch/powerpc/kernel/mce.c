@@ -19,7 +19,7 @@
  * Author: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
  */
 
-#undef DEBUG
+#define DEBUG
 #define pr_fmt(fmt) "mce: " fmt
 
 #include <linux/hardirq.h>

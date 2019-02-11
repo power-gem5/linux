@@ -26,7 +26,7 @@
 #include <asm/asm-compat.h>
 #include <asm/feature-fixups.h>
 
-#undef DEBUG
+#define DEBUG
 
 /*
  * Use unused space in the interrupt stack to save and restore

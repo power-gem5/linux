@@ -28,7 +28,7 @@
 #include <linux/uaccess.h>
 #include <asm/machdep.h>
 
-#undef DEBUG
+#define DEBUG
 
 unsigned long isa_io_base     = 0;
 unsigned long pci_dram_offset = 0;

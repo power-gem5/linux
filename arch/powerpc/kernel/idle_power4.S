@@ -18,7 +18,7 @@
 #include <asm/hw_irq.h>
 #include <asm/feature-fixups.h>
 
-#undef DEBUG
+#define DEBUG
 
 	.text
 

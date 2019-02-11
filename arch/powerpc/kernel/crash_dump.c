@@ -9,7 +9,7 @@
  * Version 2.  See the file COPYING for more details.
  */
 
-#undef DEBUG
+#define DEBUG
 
 #include <linux/crash_dump.h>
 #include <linux/io.h>

@@ -28,7 +28,7 @@
  * to reduce code space and undefined function references.
  */
 
-#undef DEBUG
+#define DEBUG
 
 #include <linux/export.h>
 #include <linux/threads.h>

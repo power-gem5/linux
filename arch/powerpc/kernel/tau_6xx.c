@@ -41,7 +41,7 @@ static struct tau_temp
 
 struct timer_list tau_timer;
 
-#undef DEBUG
+#define DEBUG
 
 /* TODO: put these in a /proc interface, with some sanity checks, and maybe
  * dynamic adjustment to minimize # of interrupts */
