@@ -81,6 +81,8 @@ END_FTR_SECTION(0, 1);						\
  _GLOBAL_TOC(name);			\
 	mfmsr	r12;			\
 	mflr	r0;			\
+	li	r3,0;			\
+	blr;				\
 	andi.	r11,r12,MSR_IR|MSR_DR; 	\
 	std	r0,PPC_LR_STKOFF(r1);	\
 	li	r0,token;		\
