@@ -68,13 +68,13 @@
 static const struct serial8250_config uart_config[] = {
 	[PORT_UNKNOWN] = {
 		.name		= "unknown",
-		.fifo_size	= 1,
-		.tx_loadsz	= 1,
+		.fifo_size	= 64,
+		.tx_loadsz	= 64,
 	},
 	[PORT_8250] = {
 		.name		= "8250",
-		.fifo_size	= 1,
-		.tx_loadsz	= 1,
+		.fifo_size	= 64,
+		.tx_loadsz	= 64,
 	},
 	[PORT_16450] = {
 		.name		= "16450",
