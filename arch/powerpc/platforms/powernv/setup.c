@@ -175,10 +175,10 @@ static void __init pnv_init(void)
 static void __init pnv_init_IRQ(void)
 {
 	/* Try using a XIVE if available, otherwise use a XICS */
-	if (!xive_native_init())
-		xics_init();
+	// if (!xive_native_init())
+	// 	xics_init();
 
-	WARN_ON(!ppc_md.get_irq);
+	// WARN_ON(!ppc_md.get_irq);
 }
 
 static void pnv_show_cpuinfo(struct seq_file *m)
