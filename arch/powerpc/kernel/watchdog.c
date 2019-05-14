@@ -109,6 +109,25 @@ static inline void wd_smp_unlock(unsigned long *flags)
 	raw_local_irq_restore(*flags);
 }
 
+static void wd_lockup_ipi(struct pt_regs *regs)
+{
+	int cpu = raw_smp_processor_id();
+	u64 tb = get_tb();
+
+	pr_emerg("CPU %d Hard LOCKUP\n", cpu);
+	pr_emerg("CPU %d TB:%lld, last heartbeat TB:%lld (%lldms ago)\n",
+		 cpu, tb, per_cpu(wd_timer_tb, cpu),
+		 tb_to_ns(tb - per_cpu(wd_timer_tb, cpu)) / 1000000);
+	print_modules();
+	print_irqtrace_events(current);
+	if (regs)
+		show_regs(regs);
+	else
+		dump_stack();
+
+	/* Do not panic from here because that can recurse into NMI IPI layer */
+}
+
 static void set_cpumask_stuck(const struct cpumask *cpumask, u64 tb)
 {
 	cpumask_or(&wd_smp_cpus_stuck, &wd_smp_cpus_stuck, cpumask);
@@ -153,6 +172,7 @@ static void watchdog_smp_panic(int cpu, u64 tb)
 		for_each_cpu(c, &wd_smp_cpus_pending) {
 			if (c == cpu)
 				continue;
+			smp_send_nmi_ipi(c, wd_lockup_ipi, 1000000);
 		}
 	}
 

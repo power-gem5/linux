@@ -528,68 +528,6 @@ static bool mm_needs_flush_escalation(struct mm_struct *mm)
 	return false;
 }
 
-static void exit_flush_lazy_tlbs(struct mm_struct *mm)
-{
-	/*
-	 * Would be nice if this was async so it could be run in
-	 * parallel with our local flush, but generic code does not
-	 * give a good API for it. Could extend the generic code or
-	 * make a special powerpc IPI for flushing TLBs.
-	 * For now it's not too performance critical.
-	 */
-#ifdef CONFIG_SMP
-	smp_call_function_many(mm_cpumask(mm), do_exit_flush_lazy_tlb,
-				(void *)mm, 1);
-	mm_reset_thread_local(mm);
-#else
-	/*
-	 * Exactly what mm_reset_thread_local() does, just that the
-	 * processor id is 0 in this case.
-	 */
-	WARN_ON(atomic_read(&mm->context.copros) > 0);
-	WARN_ON(current->mm != mm);
-	atomic_set(&mm->context.active_cpus, 1);
-	cpumask_clear(mm_cpumask(mm));
-	cpumask_set_cpu(0, mm_cpumask(mm)); // Processor ID is 0 because uniprocessor
-#endif
-}
-
-static void __flush_all_mm(struct mm_struct *mm, bool fullmm)
-{
-	unsigned long pid;
-
-	pid = mm->context.id;
-	if (unlikely(pid == MMU_NO_CONTEXT))
-		return;
-
-	preempt_disable();
-	#ifdef CONFIG_SMP
-	smp_mb(); /* see radix__flush_tlb_mm */
-	#else
-	mb();
-	#endif
-	if (!mm_is_thread_local(mm)) {
-		if (unlikely(mm_is_singlethreaded(mm))) {
-			if (!fullmm) {
-				exit_flush_lazy_tlbs(mm);
-				goto local;
-			}
-		}
-		_tlbie_pid(pid, RIC_FLUSH_ALL);
-	} else {
-local:
-		_tlbiel_pid(pid, RIC_FLUSH_ALL);
-	}
-	preempt_enable();
-}
-
-
-void radix__flush_tlb_pwc(struct mmu_gather *tlb, unsigned long addr)
-{
-	tlb->need_flush_all = 1;
-}
-EXPORT_SYMBOL(radix__flush_tlb_pwc);
-
 #ifdef CONFIG_SMP
 static void do_exit_flush_lazy_tlb(void *arg)
 {
@@ -610,6 +548,20 @@ static void do_exit_flush_lazy_tlb(void *arg)
 		mmdrop(mm);
 	}
 	_tlbiel_pid(pid, RIC_FLUSH_ALL);
+}
+
+static void exit_flush_lazy_tlbs(struct mm_struct *mm)
+{
+	/*
+	 * Would be nice if this was async so it could be run in
+	 * parallel with our local flush, but generic code does not
+	 * give a good API for it. Could extend the generic code or
+	 * make a special powerpc IPI for flushing TLBs.
+	 * For now it's not too performance critical.
+	 */
+	smp_call_function_many(mm_cpumask(mm), do_exit_flush_lazy_tlb,
+				(void *)mm, 1);
+	mm_reset_thread_local(mm);
 }
 
 void radix__flush_tlb_mm(struct mm_struct *mm)
@@ -644,11 +596,41 @@ local:
 }
 EXPORT_SYMBOL(radix__flush_tlb_mm);
 
+static void __flush_all_mm(struct mm_struct *mm, bool fullmm)
+{
+	unsigned long pid;
+
+	pid = mm->context.id;
+	if (unlikely(pid == MMU_NO_CONTEXT))
+		return;
+
+	preempt_disable();
+	smp_mb(); /* see radix__flush_tlb_mm */
+	if (!mm_is_thread_local(mm)) {
+		if (unlikely(mm_is_singlethreaded(mm))) {
+			if (!fullmm) {
+				exit_flush_lazy_tlbs(mm);
+				goto local;
+			}
+		}
+		_tlbie_pid(pid, RIC_FLUSH_ALL);
+	} else {
+local:
+		_tlbiel_pid(pid, RIC_FLUSH_ALL);
+	}
+	preempt_enable();
+}
 void radix__flush_all_mm(struct mm_struct *mm)
 {
 	__flush_all_mm(mm, false);
 }
 EXPORT_SYMBOL(radix__flush_all_mm);
+
+void radix__flush_tlb_pwc(struct mmu_gather *tlb, unsigned long addr)
+{
+	tlb->need_flush_all = 1;
+}
+EXPORT_SYMBOL(radix__flush_tlb_pwc);
 
 void radix__flush_tlb_page_psize(struct mm_struct *mm, unsigned long vmaddr,
 				 int psize)
@@ -684,6 +666,8 @@ void radix__flush_tlb_page(struct vm_area_struct *vma, unsigned long vmaddr)
 }
 EXPORT_SYMBOL(radix__flush_tlb_page);
 
+#else /* CONFIG_SMP */
+#define radix__flush_all_mm radix__local_flush_all_mm
 #endif /* CONFIG_SMP */
 
 void radix__flush_tlb_kernel_range(unsigned long start, unsigned long end)
