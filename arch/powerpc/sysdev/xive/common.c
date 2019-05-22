@@ -1283,7 +1283,7 @@ static void xive_setup_cpu(void)
 #ifdef CONFIG_SMP
 void xive_smp_setup_cpu(void)
 {
-	pr_devel("SMP setup CPU %d\n", smp_processor_id());
+	printk("SMP setup CPU %d\n", smp_processor_id());
 
 	/* This will have already been done on the boot CPU */
 	if (smp_processor_id() != boot_cpuid)

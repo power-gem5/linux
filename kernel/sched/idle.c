@@ -223,6 +223,7 @@ exit_idle:
  */
 static void do_idle(void)
 {
+	printk("Enter do_idle function\n");
 	int cpu = smp_processor_id();
 	/*
 	 * If the arch has a polling bit, we maintain an invariant:

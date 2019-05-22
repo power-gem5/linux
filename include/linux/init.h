@@ -137,6 +137,8 @@ extern initcall_entry_t __con_initcall_start[], __con_initcall_end[];
 /* Used for contructor calls. */
 typedef void (*ctor_fn_t)(void);
 
+extern unsigned long start_smp;
+
 /* Defined in init/main.c */
 extern int do_one_initcall(initcall_t fn);
 extern char __initdata boot_command_line[];

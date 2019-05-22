@@ -331,6 +331,28 @@ _GLOBAL(generic_secondary_thread_init)
  * this core already exists (setup via some other mechanism such
  * as SCOM before entry).
  */
+
+/*
+ * Make sure that the secondary cpus keep looping here until the
+ * primary cpu finishes some early initializations.
+ */
+.globl	__secondary_smp
+__secondary_smp:
+	.long  0x123
+
+_GLOBAL(smp_loop_hack)
+	/*
+	 * TODO: Can this be replaced with the following?
+	 *       LOAD_REG_IMMEDIATE(r25, FIXED_SYMBOL_ABS_ADDR(__secondary_smp))
+	 */
+	LOAD_REG_IMMEDIATE(r25, 0xc00000000000a83c)
+	li	r24,0
+	std	r24,0(r25)
+1:	ld	r24,0(r25)
+	cmpdi	r24, 0
+	beq	1b
+	b	generic_secondary_smp_init
+
 _GLOBAL(generic_secondary_smp_init)
 	FIXUP_ENDIAN
 	mr	r24,r3

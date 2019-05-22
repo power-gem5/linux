@@ -1092,6 +1092,7 @@ int __cpu_up(unsigned int cpu, struct task_struct *tidle)
 		return -ENOENT;
 	}
 
+	printk("Processor %u found.\n", cpu);
 	DBG("Processor %u found.\n", cpu);
 
 	if (smp_ops->give_timebase)
@@ -1099,6 +1100,7 @@ int __cpu_up(unsigned int cpu, struct task_struct *tidle)
 
 	/* Wait until cpu puts itself in the online & active maps */
 	spin_until_cond(cpu_online(cpu));
+	printk("Spinning done\n");
 
 	return 0;
 }
