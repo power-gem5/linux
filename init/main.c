@@ -534,6 +534,7 @@ void __init __weak arch_call_rest_init(void)
 	rest_init();
 }
 
+u64 ppc_read_msr(void);
 asmlinkage __visible void __init start_kernel(void)
 {
 	char *command_line;
@@ -655,8 +656,10 @@ asmlinkage __visible void __init start_kernel(void)
 	WARN(!irqs_disabled(), "Interrupts were enabled early\n");
 
 	early_boot_irqs_disabled = false;
+	printk("start_kernel: MSR before local_irq_enable() : 0x%016llx\n", ppc_read_msr());
 	local_irq_enable();
 
+	printk("start_kernel: MSR after local_irq_enable() : 0x%016llx\n", ppc_read_msr());
 	kmem_cache_init_late();
 
 	/*
@@ -959,8 +962,10 @@ static void __init do_initcalls(void)
 {
 	int level;
 
-	for (level = 0; level < ARRAY_SIZE(initcall_levels) - 1; level++)
+	for (level = 0; level < ARRAY_SIZE(initcall_levels) - 1; level++) {
 		do_initcall_level(level);
+		printk("Levels %d initcalls done\n",level);
+	}
 }
 
 /*
@@ -977,7 +982,9 @@ static void __init do_basic_setup(void)
 	driver_init();
 	init_irq_proc();
 	do_ctors();
+	printk("do_ctors() done\n");
 	usermodehelper_enable();
+	printk("usermodehelper_enable() done");
 	do_initcalls();
 }
 
@@ -1053,6 +1060,7 @@ static int __ref kernel_init(void *unused)
 
 	kernel_init_freeable();
 	/* need to finish all async __init code before freeing the memory */
+	printk("Kernel_init_freeable done\n");
 	async_synchronize_full();
 	ftrace_free_init_mem();
 	free_initmem();
@@ -1129,12 +1137,16 @@ static noinline void __init kernel_init_freeable(void)
 	smp_init();
 	sched_init_smp();
 
+	printk("[CPU ID:%d ] sched_init_smp() done\n",smp_processor_id());
 	page_alloc_init_late();
+	printk("[CPU ID:%d ] page_alloc_init_late() done\n",smp_processor_id());
 	/* Initialize page ext after all struct pages are initialized. */
 	page_ext_init();
 
+	printk("[CPU ID: %d] page_ext_init() done\n",smp_processor_id());
 	do_basic_setup();
 
+	printk("[CPU ID: %d] do_basic_setup() done\n",smp_processor_id());
 	/* Open the /dev/console on the rootfs, this should never fail */
 	if (ksys_open((const char __user *) "/dev/console", O_RDWR, 0) < 0)
 		pr_err("Warning: unable to open an initial console.\n");

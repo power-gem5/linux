@@ -145,6 +145,11 @@ void machine_shutdown(void)
 		ppc_md.machine_shutdown();
 }
 
+u64 ppc_read_msr(void)
+{
+	return mfmsr();
+}
+
 static void machine_hang(void)
 {
 	pr_emerg("System Halted, OK to turn off power\n");
