@@ -626,6 +626,8 @@ static inline void check_stack_overflow(void)
 #endif
 }
 
+#include <linux/serial_8250.h>
+
 void __do_irq(struct pt_regs *regs)
 {
 	unsigned int irq;
@@ -647,10 +649,7 @@ void __do_irq(struct pt_regs *regs)
 	may_hard_irq_enable();
 
 	/* And finally process it */
-	if (unlikely(!irq))
-		__this_cpu_inc(irq_stat.spurious_irqs);
-	else
-		generic_handle_irq(irq);
+	serial8250_default_handle_irq((struct uart_port *) 0xc00000000080eea8);
 
 	trace_irq_exit(regs);
 

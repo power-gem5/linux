@@ -222,6 +222,7 @@ static __initdata char *header_buf, *symlink_buf, *name_buf;
 
 static int __init do_start(void)
 {
+	printk(KERN_DEBUG "Within do_start\n");
 	read_into(header_buf, 110, GotHeader);
 	return 0;
 }
@@ -229,6 +230,7 @@ static int __init do_start(void)
 static int __init do_collect(void)
 {
 	unsigned long n = remains;
+	printk(KERN_DEBUG "Within do_collect\n");
 	if (byte_count < n)
 		n = byte_count;
 	memcpy(collect, victim, n);
@@ -242,6 +244,7 @@ static int __init do_collect(void)
 
 static int __init do_header(void)
 {
+	printk(KERN_DEBUG "Within do_header\n");
 	if (memcmp(collected, "070707", 6)==0) {
 		error("incorrect cpio method used: use -H newc option");
 		return 1;
@@ -272,6 +275,7 @@ static int __init do_header(void)
 
 static int __init do_skip(void)
 {
+	printk(KERN_DEBUG "Within do_skip\n");
 	if (this_header + byte_count < next_header) {
 		eat(byte_count);
 		return 1;
@@ -284,8 +288,10 @@ static int __init do_skip(void)
 
 static int __init do_reset(void)
 {
+	printk(KERN_DEBUG "Within do_reset\n");
 	while (byte_count && *victim == '\0')
 		eat(1);
+
 	if (byte_count && (this_header & 3))
 		error("broken padding");
 	return 1;
@@ -319,6 +325,7 @@ static __initdata int wfd;
 
 static int __init do_name(void)
 {
+	printk(KERN_DEBUG "Within do_name\n");
 	state = SkipIt;
 	next_state = Reset;
 	if (strcmp(collected, "TRAILER!!!") == 0) {
@@ -362,6 +369,7 @@ static int __init do_name(void)
 
 static int __init do_copy(void)
 {
+	printk(KERN_DEBUG "Within do_copy size: %lu\n",byte_count);
 	if (byte_count >= body_len) {
 		if (xwrite(wfd, victim, body_len) != body_len)
 			error("write error");
@@ -382,6 +390,7 @@ static int __init do_copy(void)
 
 static int __init do_symlink(void)
 {
+	printk(KERN_DEBUG "Within do_symlink\n");
 	collected[N_ALIGN(name_len) + body_len] = '\0';
 	clean_path(collected, 0);
 	ksys_symlink(collected + N_ALIGN(name_len), collected);

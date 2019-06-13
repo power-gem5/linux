@@ -265,6 +265,8 @@ static int __init icp_native_init_one_node(struct device_node *np,
 	int i;
 	int reg_tuple_size;
 	int num_servers = 0;
+	int addr_cells = 0;
+	int size_cells = 0;
 
 	/* This code does the theorically broken assumption that the interrupt
 	 * server numbers are the same as the hard CPU numbers.
@@ -290,7 +292,15 @@ static int __init icp_native_init_one_node(struct device_node *np,
 		return -1;
 	}
 
-	reg_tuple_size = (of_n_addr_cells(np) + of_n_size_cells(np)) * 4;
+	addr_cells = of_n_addr_cells(np);
+	size_cells = of_n_size_cells(np);
+	reg_tuple_size = (addr_cells + size_cells) * 4;
+
+	printk(KERN_DEBUG "ilen :: %d reg_tuple_size :: %d num_servers :: %d"
+			  "addr_cells :: %d size_cells :: %d\n",
+			  ilen, reg_tuple_size, num_servers, addr_cells,
+			  size_cells);
+
 	if (((ilen % reg_tuple_size) != 0)
 	    || (num_servers && (num_servers != (ilen / reg_tuple_size)))) {
 		pr_err("icp_native: ICP reg len (%d) != num servers (%d)",

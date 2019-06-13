@@ -588,6 +588,8 @@ void __init prepare_namespace(void)
 
 	md_run_setup();
 
+	printk(KERN_DEBUG "root_dev_setup :: %s", saved_root_name);
+
 	if (saved_root_name[0]) {
 		root_device_name = saved_root_name;
 		if (!strncmp(root_device_name, "mtd", 3) ||

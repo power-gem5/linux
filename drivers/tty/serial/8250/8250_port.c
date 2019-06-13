@@ -68,13 +68,13 @@
 static const struct serial8250_config uart_config[] = {
 	[PORT_UNKNOWN] = {
 		.name		= "unknown",
-		.fifo_size	= 64,
-		.tx_loadsz	= 64,
+		.fifo_size	= 1,
+		.tx_loadsz	= 1,
 	},
 	[PORT_8250] = {
 		.name		= "8250",
-		.fifo_size	= 64,
-		.tx_loadsz	= 64,
+		.fifo_size	= 1,
+		.tx_loadsz	= 1,
 	},
 	[PORT_16450] = {
 		.name		= "16450",
@@ -455,7 +455,7 @@ static void io_serial_out(struct uart_port *p, int offset, int value)
 	outb(value, p->iobase + offset);
 }
 
-static int serial8250_default_handle_irq(struct uart_port *port);
+int serial8250_default_handle_irq(struct uart_port *port);
 
 static void set_io_from_upio(struct uart_port *p)
 {
@@ -1883,7 +1883,7 @@ int serial8250_handle_irq(struct uart_port *port, unsigned int iir)
 }
 EXPORT_SYMBOL_GPL(serial8250_handle_irq);
 
-static int serial8250_default_handle_irq(struct uart_port *port)
+int serial8250_default_handle_irq(struct uart_port *port)
 {
 	struct uart_8250_port *up = up_to_u8250p(port);
 	unsigned int iir;
@@ -1897,6 +1897,8 @@ static int serial8250_default_handle_irq(struct uart_port *port)
 	serial8250_rpm_put(up);
 	return ret;
 }
+
+EXPORT_SYMBOL_GPL(serial8250_default_handle_irq);
 
 /*
  * Newer 16550 compatible parts such as the SC16C650 & Altera 16550 Soft IP
