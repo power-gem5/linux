@@ -114,9 +114,11 @@ static int pnv_smp_kick_cpu(int nr)
 	/*
 	 * Available/inactive, let's kick it
 	 */
+	printk("[OPAL_DEBUG]In pmv_smp_kick_cpu\n");
 	if (status == OPAL_THREAD_INACTIVE) {
 		pr_devel("OPAL: Starting CPU %d (HW 0x%x)...\n", nr, pcpu);
 		rc = opal_start_cpu(pcpu, start_here);
+		printk("[OPAL_DEBUG]call opal_start_cpu\n");
 		if (rc != OPAL_SUCCESS) {
 			pr_warn("OPAL Error %ld starting CPU %d\n", rc, nr);
 			return -ENODEV;
@@ -128,6 +130,7 @@ static int pnv_smp_kick_cpu(int nr)
 		 * not be in the possible map but currently it can
 		 * happen
 		 */
+		printk("[OPAL_DEBUG]*****Else part OPAL_INActive*******\n");
 		pr_devel("OPAL: CPU %d (HW 0x%x) is unavailable"
 			 " (status %d)...\n", nr, pcpu, status);
 		return -ENODEV;
@@ -294,9 +297,14 @@ static void pnv_cause_ipi(int cpu)
 
 static void __init pnv_smp_probe(void)
 {
+	if (xive_enabled())
+		xive_smp_probe();
+	else
+		xics_smp_probe();
+
 	if (cpu_has_feature(CPU_FTR_DBELL)) {
 		ic_cause_ipi = smp_ops->cause_ipi;
-		WARN_ON(!ic_cause_ipi);
+		// WARN_ON(!ic_cause_ipi);
 
 		if (cpu_has_feature(CPU_FTR_ARCH_300))
 			smp_ops->cause_ipi = doorbell_global_ipi;

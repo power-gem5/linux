@@ -81,9 +81,15 @@ END_FTR_SECTION(0, 1);						\
  _GLOBAL_TOC(name);			\
 	mfmsr	r12;			\
 	mflr	r0;			\
+        li	r24,41;                 \
+        cmpdi	r24,token;              \
+        beq	1f;                     \
+        li	r24,42;                 \
+        cmpdi	r24,token;              \
+        beq	1f;                     \
 	li	r3,0;			\
 	blr;				\
-	andi.	r11,r12,MSR_IR|MSR_DR; 	\
+1:	andi.	r11,r12,MSR_IR|MSR_DR; 	\
 	std	r0,PPC_LR_STKOFF(r1);	\
 	li	r0,token;		\
 	beq	opal_real_call;         \
