@@ -649,7 +649,9 @@ void __do_irq(struct pt_regs *regs)
 	may_hard_irq_enable();
 
 	/* And finally process it */
-	serial8250_default_handle_irq((struct uart_port *) 0xc00000000080eea8);
+	/* The only possible source here would be the 8250 UART */
+	BUG_ON(!sim_port);
+	serial8250_default_handle_irq(sim_port);
 
 	trace_irq_exit(regs);
 

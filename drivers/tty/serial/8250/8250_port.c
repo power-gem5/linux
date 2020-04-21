@@ -310,6 +310,8 @@ static const struct serial8250_config uart_config[] = {
 	},
 };
 
+struct uart_port *sim_port = NULL;
+
 /* Uart divisor latch read */
 static int default_serial_dl_read(struct uart_8250_port *up)
 {

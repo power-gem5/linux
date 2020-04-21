@@ -524,6 +524,11 @@ static void __init serial8250_isa_init_ports(void)
 		 */
 		up->mcr_mask = ~ALPHA_KLUDGE_MCR;
 		up->mcr_force = ALPHA_KLUDGE_MCR;
+
+		/* Remember this cause we don't have an interrupt
+		   controller, duh! */
+		if (i == 0)
+			sim_port = port;
 	}
 
 	/* chain base port ops to support Remote Supervisor Adapter */

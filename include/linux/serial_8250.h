@@ -150,6 +150,9 @@ void serial8250_unregister_port(int line);
 void serial8250_suspend_port(int line);
 void serial8250_resume_port(int line);
 
+/* One and only uart_port for gem5 */
+extern struct uart_port *sim_port;
+
 extern int early_serial_setup(struct uart_port *port);
 
 extern int early_serial8250_setup(struct earlycon_device *device,
